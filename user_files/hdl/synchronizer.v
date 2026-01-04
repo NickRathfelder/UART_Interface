@@ -7,7 +7,7 @@ module synchronizer(
     
 reg r_1;
 reg r_2;
-always @(posedge clk or negedge rst_n)
+always @(posedge clk)
 begin
     if(~rst_n)
     begin

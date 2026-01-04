@@ -29,30 +29,40 @@ parameter DEBOUNCE_LENGTH_US = 16'd10000
     );
 
 localparam [31:0] db_count = DEBOUNCE_LENGTH_US * 100; //10 ms
+
 reg db_reg;
-reg[19:0] db_timer;
-always @(posedge clk or negedge rst_n)
+reg db_timer_en;
+reg[31:0] db_timer;
+always @(posedge clk)
 begin
     if (~rst_n) 
     begin
-        db_timer <= db_count;
         db_reg <= db_i;
+        db_timer_en <= 1'b0;
+        db_timer <= 32'd0;
     end
     else
     begin
-        if(db_i != db_reg)
+        if(db_timer_en)
         begin
-            if(db_timer == 20'h0)
+            if(db_timer == db_count)
+            begin
+                db_timer_en <= 1'b0;
+                db_timer <= 32'd0;
+            end
+            else db_timer <= db_timer + 1;
+        end
+        else
+        begin
+            if(db_i ^ db_reg)
             begin
                 db_reg <= db_i;
-                db_timer <= db_count;
+                db_timer_en <= 1'b1;
             end
-            else db_timer <= db_timer -1;
         end
     end
     
 end
-
 assign db_o = db_reg;
     
 endmodule

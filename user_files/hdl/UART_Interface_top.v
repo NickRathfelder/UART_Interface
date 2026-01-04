@@ -104,7 +104,7 @@ module UART_Interface_top(
     );
     
     //Shift register logic
-    always @(posedge clk_100mhz or negedge rst_main_n)
+    always @(posedge clk_100mhz)
     begin
         if (~rst_main_n) shift_reg <= 128'h0;
         else
@@ -128,7 +128,7 @@ module UART_Interface_top(
         .clr_shift(clear_shift_reg)
     );
     //Read Logic
-    always @(posedge clk_100mhz or negedge rst_main_n)
+    always @(posedge clk_100mhz)
     begin
         if(~rst_main_n)
         begin
@@ -141,7 +141,7 @@ module UART_Interface_top(
     end
     
     //Pulse Generator
-    always @(posedge clk_100mhz or negedge rst_main_n)
+    always @(posedge clk_100mhz)
     begin
     if(~rst_main_n)
         begin

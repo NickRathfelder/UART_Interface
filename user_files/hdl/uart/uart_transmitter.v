@@ -69,7 +69,7 @@ uart_fifo tf_fifo(
     .empty(tf_empty)
 );
 //New State machine
-always @(posedge clk_tf or negedge rst_n_tf)
+always @(posedge clk_tf)
 begin
     if(~rst_n_tf)
     begin

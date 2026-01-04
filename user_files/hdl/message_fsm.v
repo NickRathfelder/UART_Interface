@@ -46,7 +46,7 @@ reg _ld_char;
 reg _clr_shift;
 
 //State Transition
-always @(posedge clk or negedge rst_n)
+always @(posedge clk)
 begin
     if(~rst_n) cur_state <= IDLE;
     else cur_state <= nxt_state;

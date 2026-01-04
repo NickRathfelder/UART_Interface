@@ -69,7 +69,7 @@ uart_fifo rf_fifo(
 // Synchronize RX to rf clock
 synchronizer rx_synchronize(.clk(clk_rf), .rst_n(rst_n_rf), .s_i(transmitter_rx), .s_o(transmitter_rx_sync));
 //New State machine
-always @(posedge clk_rf or negedge rst_n_rf)
+always @(posedge clk_rf)
 begin
     if(~rst_n_rf)
     begin
