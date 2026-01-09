@@ -23,15 +23,14 @@ create_project -force $proj_name $proj_dir -part $proj_part
 # Add RTL
 add_files [glob -nocomplain "$hdl_dir/*.v"]
 add_files [glob -nocomplain "$hdl_dir/uart/*.v"]
+add_files [glob -nocomplain "$hdl_dir/common/*.v"]
+add_files [glob -nocomplain "$hdl_dir/cdc/*.v"]
 
 # Add Testbenches
 add_files -fileset sim_1 [glob -nocomplain "$test_dir/*.sv"]
 
 # Add Constraints
 add_files -fileset constrs_1 [glob -nocomplain "$synth_dir/*.xdc"]
-
-# Read IP
-read_ip $ip_dir/uart_fifo/uart_fifo.xci
 
 # Set synth and sim top files
 set_property top $top_file [get_filesets sources_1]

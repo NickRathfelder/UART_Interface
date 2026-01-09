@@ -23,8 +23,8 @@
 module uart_transmitter(
     input clk_main,
     input clk_tf,
-    input rst_n_main,
-    input rst_n_tf,
+    input rst_main_n,
+    input rst_tf_n,
     input fifo_wr,
     input [7:0] tf_in,
     
@@ -58,7 +58,8 @@ module uart_transmitter(
 uart_fifo tf_fifo(
     .wr_clk(clk_main),
     .rd_clk(clk_tf),
-    .rst(~rst_n_main),
+    .rst_wr_n(rst_main_n),
+    .rst_rd_n(rst_tf_n),
  
     .din(tf_in),
     .wr_en(fifo_wr),
@@ -71,7 +72,7 @@ uart_fifo tf_fifo(
 //New State machine
 always @(posedge clk_tf)
 begin
-    if(~rst_n_tf)
+    if(~rst_tf_n)
     begin
         cur_state <= IDLE;
         _fifo_rd <= 1'b0;

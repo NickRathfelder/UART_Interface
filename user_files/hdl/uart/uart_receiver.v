@@ -23,8 +23,8 @@
 module uart_receiver(
     input clk_main,
     input clk_rf,
-    input rst_n_main,
-    input rst_n_rf,
+    input rst_main_n,
+    input rst_rf_n,
     input fifo_rd,
     input transmitter_rx,
     
@@ -55,7 +55,8 @@ module uart_receiver(
 uart_fifo rf_fifo(
     .wr_clk(clk_rf),
     .rd_clk(clk_main),
-    .rst(~rst_n_main),
+    .rst_wr_n(rst_rf_n),
+    .rst_rd_n(rst_main_n),
  
     .din(rf_shift_reg),
     .wr_en(fifo_wr),
@@ -65,13 +66,12 @@ uart_fifo rf_fifo(
     .rd_en(fifo_rd),
     .empty(rf_empty)
 );
-
 // Synchronize RX to rf clock
-synchronizer rx_synchronize(.clk(clk_rf), .rst_n(rst_n_rf), .s_i(transmitter_rx), .s_o(transmitter_rx_sync));
+synchronizer #(.DEFAULT_VAL(1'b1)) rx_synchronize(.clk(clk_rf), .rst_n(rst_rf_n), .s_i(transmitter_rx), .s_o(transmitter_rx_sync));
 //New State machine
 always @(posedge clk_rf)
 begin
-    if(~rst_n_rf)
+    if(~rst_rf_n)
     begin
         cur_state <= POLL;
         _fifo_wr <= 1'b0;

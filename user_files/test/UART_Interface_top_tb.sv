@@ -30,7 +30,7 @@ reg [1:0] btn_i_t;
 wire terminal_tx_t;
 reg [3:0] led_t;
 
-assign terminal_rx_t = terminal_tx_t;
+assign terminal_rx_t = 1'b1;
 
 initial
 begin

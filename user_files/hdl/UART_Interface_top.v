@@ -57,9 +57,13 @@ module UART_Interface_top(
     reg [1:0] __btn;
     wire btn0_pulse;
     wire btn1_pulse;
+    
+    wire uart0_wr;
     reg [7:0] uart0_din;
     wire[7:0] uart0_dout;
     wire uart0_rf_empty;
+    wire uart0_tf_full;
+    
     
     //LED Out
     reg[3:0] led_out;
@@ -69,22 +73,22 @@ module UART_Interface_top(
     //Initialize ROM
     initial
     begin
-        msg_rom[0] = 128'h0d4d4553534147455f305f53454e5400;
-        msg_rom[1] = 128'h0d4d4553534147455f315f53454e5400;
-        msg_rom[2] = 128'h0d4d4553534147455f325f53454e5400;
-        msg_rom[3] = 128'h0d4d4553534147455f335f53454e5400;
-        msg_rom[4] = 128'h0d4d4553534147455f345f53454e5400;
-        msg_rom[5] = 128'h0d4d4553534147455f355f53454e5400;
-        msg_rom[6] = 128'h0d4d4553534147455f365f53454e5400;
-        msg_rom[7] = 128'h0d4d4553534147455f375f53454e5400;
-        msg_rom[8] = 128'h0d4d4553534147455f385f53454e5400;
-        msg_rom[9] = 128'h0d4d4553534147455f395f53454e5400;
-        msg_rom[10] = 128'h0d4d4553534147455f31305f53454e54;
-        msg_rom[11] = 128'h0d4d4553534147455f31315f53454e54;
-        msg_rom[12] = 128'h0d4d4553534147455f31325f53454e54;
-        msg_rom[13] = 128'h0d4d4553534147455f31335f53454e54;
-        msg_rom[14] = 128'h0d4d4553534147455f31345f53454e54;
-        msg_rom[15] = 128'h0d4d4553534147455f31355f53454e54;
+        msg_rom[0] = 128'h4d4553534147455f305f53454e540d00;
+        msg_rom[1] = 128'h4d4553534147455f315f53454e540d00;
+        msg_rom[2] = 128'h4d4553534147455f325f53454e540d00;
+        msg_rom[3] = 128'h4d4553534147455f335f53454e540d00;
+        msg_rom[4] = 128'h4d4553534147455f345f53454e540d00;
+        msg_rom[5] = 128'h4d4553534147455f355f53454e540d00;
+        msg_rom[6] = 128'h4d4553534147455f365f53454e540d00;
+        msg_rom[7] = 128'h4d4553534147455f375f53454e540d00;
+        msg_rom[8] = 128'h4d4553534147455f385f53454e540d00;
+        msg_rom[9] = 128'h4d4553534147455f395f53454e540d00;
+        msg_rom[10] = 128'h4d4553534147455f31305f53454e540d;
+        msg_rom[11] = 128'h4d4553534147455f31315f53454e540d;
+        msg_rom[12] = 128'h4d4553534147455f31325f53454e540d;
+        msg_rom[13] = 128'h4d4553534147455f31335f53454e540d;
+        msg_rom[14] = 128'h4d4553534147455f31345f53454e540d;
+        msg_rom[15] = 128'h4d4553534147455f31355f53454e540d;
     end
 
     // ROM Reading
@@ -120,8 +124,7 @@ module UART_Interface_top(
         .clk(clk_100mhz),
         .rst_n(rst_main_n),
         .send_msg(btn0_pulse),
-        .fifo_empty(uart0_rf_empty),
-        .end_of_msg(end_message),
+        .wr_char(uart0_wr),
     
         .ld_shift(load_shift_reg),
         .ld_char(load_nxt_char),
@@ -159,17 +162,18 @@ module UART_Interface_top(
         .clk_main(clk_100mhz),
         .rst_n(rst_main_n),
         .wr_in(cur_char),
-        .wr_stb(load_nxt_char),
+        .wr_stb(uart0_wr),
         .rd_stb(btn1_pulse),
         .rx_pad(terminal_rx),
         .rd_out(uart0_dout),
         .tx_pad(terminal_tx),
-        .rf_empty(uart0_rf_empty)
+        .rf_empty(uart0_rf_empty),
+        .tf_full(uart0_tf_full)
     );
     
     assign cur_char = shift_reg[127:120];
     assign end_message = (cur_char == 8'h0);
-    
+    assign uart0_wr = (cur_char != 8'h0) && !uart0_tf_full;
     assign btn0_pulse = btn[0] && ~_btn[0];
     assign btn1_pulse = btn[1] && ~_btn[1];
     assign led = led_out;

@@ -24,8 +24,7 @@ module message_fsm(
     input clk,
     input rst_n,
     input send_msg,
-    input fifo_empty,
-    input end_of_msg,
+    input wr_char,
     
     output ld_shift,
     output ld_char,
@@ -61,17 +60,16 @@ begin
         case(cur_state)
         IDLE:
         begin
-            if(send_msg && fifo_empty) nxt_state <= LOAD_MSG;
+            if(send_msg) nxt_state <= LOAD_MSG;
             else nxt_state <= IDLE;
         end
         LOAD_MSG:
         begin
-            if(!end_of_msg) nxt_state <= SEND_CHAR;
-            else nxt_state <= LOAD_MSG;
+            nxt_state <= SEND_CHAR;
         end
         SEND_CHAR:
         begin
-            if(end_of_msg) nxt_state <= CLEAR_REG;
+            if(!wr_char) nxt_state <= CLEAR_REG;
             else nxt_state <= SEND_CHAR;
         end
         CLEAR_REG:

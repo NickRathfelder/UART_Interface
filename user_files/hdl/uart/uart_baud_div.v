@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module clk_divider #(parameter DIV_VAL = 32'h2)
+module uart_baud_div #(parameter DIV_VAL = 32'h2)
 (
     input wire clk_in,
     input wire rst_n_in,

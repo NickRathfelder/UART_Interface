@@ -1,4 +1,6 @@
-module synchronizer(
+module synchronizer# (
+parameter DEFAULT_VAL = 1'b0
+)(
     input clk,
     input rst_n,
     input s_i,
@@ -11,8 +13,8 @@ always @(posedge clk)
 begin
     if(~rst_n)
     begin
-        r_1 <= 1'b0;
-        r_2 <= 1'b0;
+        r_1 <= DEFAULT_VAL;
+        r_2 <= DEFAULT_VAL;
     end
     else
     begin
