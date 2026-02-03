@@ -31,13 +31,8 @@ module cdc_mod(
     output [1:0] btn_filt 
     );
 
-wire sw0_sync;
-wire sw1_sync;
-wire sw2_sync;
-wire sw3_sync;
-
-wire btn0_sync;
-wire btn1_sync;
+wire [3:0] sw_sync;
+wire [1:0] btn_sync;
 
 wire sw0_filt;
 wire sw1_filt;
@@ -51,23 +46,17 @@ wire rst_filt;
 
 //Synchronizers
 synchronizer rst_synchronize(.clk(clk_core), .rst_n(1'b1), .s_i(rst_async), .s_o(rst_filt));
-
-synchronizer sw0_synchronize(.clk(clk_core), .rst_n(rst_filt), .s_i(sw_async[0]), .s_o(sw0_sync));
-synchronizer sw1_synchronize(.clk(clk_core), .rst_n(rst_filt), .s_i(sw_async[1]), .s_o(sw1_sync));
-synchronizer sw2_synchronize(.clk(clk_core), .rst_n(rst_filt), .s_i(sw_async[2]), .s_o(sw2_sync));
-synchronizer sw3_synchronize(.clk(clk_core), .rst_n(rst_filt), .s_i(sw_async[3]), .s_o(sw3_sync));
-
-synchronizer btn0_synchronize(.clk(clk_core), .rst_n(rst_filt), .s_i(btn_async[0]), .s_o(btn0_sync));
-synchronizer btn1_synchronize(.clk(clk_core), .rst_n(rst_filt), .s_i(btn_async[1]), .s_o(btn1_sync));
+synchronizer #(.n(4)) sw_synchronize(.clk(clk_core), .rst_n(rst_filt), .s_i(sw_async), .s_o(sw_sync));
+synchronizer #(.n(2)) btn_synchronize(.clk(clk_core), .rst_n(rst_filt), .s_i(btn_async), .s_o(btn_sync));
 
 //Debouncers
-debouncer #(.DEBOUNCE_LENGTH_US(16'd1000)) sw0_db(.clk(clk_core), .rst_n(rst_filt), .db_i(sw0_sync), .db_o(sw0_filt));
-debouncer #(.DEBOUNCE_LENGTH_US(16'd1000)) sw1_db(.clk(clk_core), .rst_n(rst_filt), .db_i(sw1_sync), .db_o(sw1_filt));
-debouncer #(.DEBOUNCE_LENGTH_US(16'd1000)) sw2_db(.clk(clk_core), .rst_n(rst_filt), .db_i(sw2_sync), .db_o(sw2_filt));
-debouncer #(.DEBOUNCE_LENGTH_US(16'd1000)) sw3_db(.clk(clk_core), .rst_n(rst_filt), .db_i(sw3_sync), .db_o(sw3_filt));
+debouncer #(.DEBOUNCE_LENGTH_US(16'd10000)) sw0_db(.clk(clk_core), .rst_n(rst_filt), .db_i(sw_sync[0]), .db_o(sw0_filt));
+debouncer #(.DEBOUNCE_LENGTH_US(16'd10000)) sw1_db(.clk(clk_core), .rst_n(rst_filt), .db_i(sw_sync[1]), .db_o(sw1_filt));
+debouncer #(.DEBOUNCE_LENGTH_US(16'd10000)) sw2_db(.clk(clk_core), .rst_n(rst_filt), .db_i(sw_sync[2]), .db_o(sw2_filt));
+debouncer #(.DEBOUNCE_LENGTH_US(16'd10000)) sw3_db(.clk(clk_core), .rst_n(rst_filt), .db_i(sw_sync[3]), .db_o(sw3_filt));
 
-debouncer #(.DEBOUNCE_LENGTH_US(16'd1000)) btn0_db(.clk(clk_core), .rst_n(rst_filt), .db_i(btn0_sync), .db_o(btn0_filt));
-debouncer #(.DEBOUNCE_LENGTH_US(16'd1000)) btn1_db(.clk(clk_core), .rst_n(rst_filt), .db_i(btn1_sync), .db_o(btn1_filt));
+debouncer #(.DEBOUNCE_LENGTH_US(16'd10000)) btn0_db(.clk(clk_core), .rst_n(rst_filt), .db_i(btn_sync[0]), .db_o(btn0_filt));
+debouncer #(.DEBOUNCE_LENGTH_US(16'd10000)) btn1_db(.clk(clk_core), .rst_n(rst_filt), .db_i(btn_sync[1]), .db_o(btn1_filt));
 
 assign sw_filt = {sw3_filt, sw2_filt, sw1_filt, sw0_filt};
 assign btn_filt = {btn1_filt,btn0_filt};

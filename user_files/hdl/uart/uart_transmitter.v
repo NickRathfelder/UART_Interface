@@ -45,7 +45,7 @@ module uart_transmitter(
     wire tf_empty;
     
     //State Machine States
-    reg [2:0] cur_state,nxt_state;  
+    reg [2:0] cur_state;  
     
     //State Outputs
     reg _transmitter_tx;
