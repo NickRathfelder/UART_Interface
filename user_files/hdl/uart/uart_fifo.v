@@ -8,7 +8,10 @@ module uart_fifo(
     input rd_en,
     
     output full,
+    output almost_full,
     output empty,
+    output almost_empty,
+    
     output reg [7:0] dout
 
     );
@@ -71,7 +74,9 @@ module uart_fifo(
     
     // Empty/Full Flags
     assign empty = (rd_ptr[10:0] == wr_ptr_b_sync[10:0]) && !(rd_ptr[11] ^ wr_ptr_b_sync[11]);
+    assign almost_empty = (wr_ptr_b_sync[10:0] == rd_ptr[10:0] + 1'b1) || empty;
     assign full = (wr_ptr[10:0] == rd_ptr_b_sync[10:0]) && (wr_ptr[11] ^ rd_ptr_b_sync[11]);
+    assign almost_full  = (rd_ptr_b_sync[10:0] == wr_ptr[10:0] + 1'b1) || full;
     
     assign rd_stb = rd_en && !empty;
     assign wr_stb = wr_en && !full;

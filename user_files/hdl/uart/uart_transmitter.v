@@ -28,7 +28,8 @@ module uart_transmitter(
     input fifo_wr,
     input [7:0] tf_in,
     
-    output tf_full,
+    output tf_fifo_full,
+    output tf_fifo_almost_full,
     output transmitter_tx
 
 );
@@ -42,7 +43,7 @@ module uart_transmitter(
     //FIFO Signals
     wire[7:0] tf_dout;
     wire fifo_rd;
-    wire tf_empty;
+    wire tf_fifo_empty;
     
     //State Machine States
     reg [2:0] cur_state;  
@@ -63,11 +64,13 @@ uart_fifo tf_fifo(
  
     .din(tf_in),
     .wr_en(fifo_wr),
-    .full(tf_full),
+    .full(tf_fifo_full),
+    .almost_full(tf_fifo_almost_full),
     
     .dout(tf_dout),
     .rd_en(fifo_rd),
-    .empty(tf_empty)
+    .empty(tf_fifo_empty),
+    .almost_empty()
 );
 //New State machine
 always @(posedge clk_tf)
@@ -86,7 +89,7 @@ begin
         case (cur_state)
         IDLE:
         begin
-            if(~tf_empty)
+            if(~tf_fifo_empty)
             begin
                 cur_state <= SEND_START;
                 _fifo_rd <= 1'b1;

@@ -20,70 +20,123 @@
 //////////////////////////////////////////////////////////////////////////////////
 `timescale 1ns / 1ps
 
+// DUT
 module uart_fifo_tb();
-reg clk_100mhz_t;
-reg clk_16mhz_t;
-reg rst_wr_n_t;
-reg rst_rd_n_t;
-reg [7:0] din_t;
-reg wr_en_t;
-reg rd_en_t;
+logic clk_wr_100mhz_t;
+logic clk_rd_16mhz_t;
+logic rst_wr_n_t;
+logic rst_rd_n_t;
+logic [7:0] din_t;
+logic wr_en_t;
+logic rd_en_t;
 
-wire full_t;
-wire empty_t;
-wire [7:0] dout_t;
+logic full_t;
+logic almost_full_t;
+logic empty_t;
+logic almost_empty_t;
+logic [7:0] dout_t;
 
 initial
 begin
-    clk_100mhz_t = 0;
+    // Setup
+    clk_wr_100mhz_t = 0;
+    clk_rd_16mhz_t = 0;  
     rst_wr_n_t = 0;
-    din_t = 8'h00;
-    wr_en_t = 0;
-
-    clk_16mhz_t = 0;  
     rst_rd_n_t = 0;
-    rd_en_t = 0;
-    #1000;
-    @(posedge clk_100mhz_t);
-    rst_wr_n_t = 1;
-    @(posedge clk_16mhz_t);
-    rst_rd_n_t = 1;
-    repeat (5) @(posedge clk_100mhz_t);
-    din_t = 8'h10;
-    wr_en_t = 1;
-    @(posedge clk_100mhz_t);
-    din_t = 8'h11;
-    @(posedge clk_100mhz_t);
-    din_t = 8'h12;
-    @(posedge clk_100mhz_t);
-    din_t = 8'h13;
     wr_en_t = 0;
-    @(posedge clk_100mhz_t);
-    @(posedge clk_16mhz_t);
-    rd_en_t = 1;
-    repeat (5) @(posedge clk_16mhz_t);
     rd_en_t = 0;
-    @(posedge clk_100mhz_t);
-    wr_en_t = 1;
-    din_t = 8'hab;
-    repeat (2047) @(posedge clk_100mhz_t);
-    din_t = 8'h11;
-    @(posedge clk_100mhz_t);
-    wr_en_t = 0;
+    din_t = 8'h00;
+    reset_check();
+    functional_check();
+    empty_check();
+    full_check();
 end
 
-always #(5) clk_100mhz_t= ~clk_100mhz_t;
-always #(31.25) clk_16mhz_t= ~clk_16mhz_t;
-uart_fifo_v2 dut(
-    .wr_clk(clk_100mhz_t),
-    .rd_clk(clk_16mhz_t),
+task reset_check();
+    begin
+        @(posedge clk_wr_100mhz_t);
+        rst_wr_n_t <= 1'b0;
+        @(posedge clk_rd_16mhz_t);
+        rst_rd_n_t <= 1'b0;   
+        @(posedge clk_wr_100mhz_t);
+        din_t <= 8'h01;
+        wr_en_t <= 1'b1;
+        @(posedge clk_wr_100mhz_t);
+        wr_en_t <= 1'b0;
+        repeat(2) @(posedge clk_rd_16mhz_t);
+        rd_en_t <= 1'b1;
+        @(posedge clk_rd_16mhz_t);
+        rd_en_t <= 1'b0;
+        @(posedge clk_rd_16mhz_t);
+    end
+endtask
+
+task functional_check();
+    begin
+        @(posedge clk_wr_100mhz_t);
+        rst_wr_n_t <= 1'b1;
+        @(posedge clk_rd_16mhz_t);
+        rst_rd_n_t <= 1'b1;
+        @(posedge clk_wr_100mhz_t);
+        din_t <= 8'h02;
+        wr_en_t <= 1'b1;
+        @(posedge clk_wr_100mhz_t);
+        wr_en_t <= 1'b0;
+        repeat(2) @(posedge clk_rd_16mhz_t);
+        rd_en_t <= 1'b1;
+        @(posedge clk_rd_16mhz_t);
+        rd_en_t <= 1'b0;
+        @(posedge clk_rd_16mhz_t);
+    end
+endtask
+
+task empty_check();
+    begin
+        @(posedge clk_wr_100mhz_t);
+        wr_en_t <= 1'b1;
+        repeat(4) @(posedge clk_wr_100mhz_t);
+        wr_en_t <= 1'b0;
+        repeat(2) @(posedge clk_rd_16mhz_t);
+        rd_en_t <= 1'b1;
+        repeat(4) @(posedge clk_rd_16mhz_t);
+        rd_en_t <= 1'b0;
+        @(posedge clk_rd_16mhz_t);
+    end
+endtask
+
+task full_check();
+    begin
+        @(posedge clk_wr_100mhz_t);
+        din_t <= 8'h00;
+        wr_en_t <= 1'b1;
+        repeat(2048) begin
+            @(posedge clk_wr_100mhz_t);
+            din_t <= din_t +1;
+        end
+        wr_en_t <= 1'b0;
+        repeat(2) @(posedge clk_rd_16mhz_t);
+        rd_en_t <= 1'b1;
+        repeat (2048) @(posedge clk_rd_16mhz_t);
+        rd_en_t <= 1'b0;
+        @(posedge clk_rd_16mhz_t);
+    end
+endtask
+//Clock Generation
+always #(5) clk_wr_100mhz_t= ~clk_wr_100mhz_t;
+always #(31.25) clk_rd_16mhz_t= ~clk_rd_16mhz_t;
+
+uart_fifo dut(
+    .wr_clk(clk_wr_100mhz_t),
+    .rd_clk(clk_rd_16mhz_t),
     .rst_wr_n(rst_wr_n_t),
     .rst_rd_n(rst_rd_n_t),
     .din(din_t),
     .wr_en(wr_en_t),
     .rd_en(rd_en_t),
     .full(full_t),
+    .almost_full(almost_full_t),
     .empty(empty_t),
+    .almost_empty(almost_empty_t),
     .dout(dout_t)
 );
 

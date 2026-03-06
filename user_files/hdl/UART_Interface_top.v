@@ -62,7 +62,9 @@ module UART_Interface_top(
     reg [7:0] uart0_din;
     wire[7:0] uart0_dout;
     wire uart0_rf_empty;
+    wire uart0_rf_almost_empty;
     wire uart0_tf_full;
+    wire uart0_tf_almost_full;
     
     
     //LED Out
@@ -168,12 +170,14 @@ module UART_Interface_top(
         .rd_out(uart0_dout),
         .tx_pad(terminal_tx),
         .rf_empty(uart0_rf_empty),
-        .tf_full(uart0_tf_full)
+        .rf_almost_empty(uart0_rf_almost_empty),
+        .tf_full(uart0_tf_full),
+        .tf_almost_full(uart0_tf_almost_full)
     );
     
     assign cur_char = shift_reg[127:120];
     assign end_message = (cur_char == 8'h0);
-    assign uart0_wr = (cur_char != 8'h0) && !uart0_tf_full;
+    assign uart0_wr = (cur_char != 8'h0) && !uart0_tf_almost_full;
     assign btn0_pulse = btn[0] && ~_btn[0];
     assign btn1_pulse = btn[1] && ~_btn[1];
     assign led = led_out;

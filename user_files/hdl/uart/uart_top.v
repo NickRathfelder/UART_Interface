@@ -33,7 +33,9 @@ parameter BAUD_DIV = 32'd54
     output [7:0] rd_out,
     output tx_pad,
     output rf_empty,
-    output tf_full
+    output rf_almost_empty,
+    output tf_full,
+    output tf_almost_full
 
     );
 //Baud Rate Generator
@@ -44,10 +46,8 @@ wire clk_baud;
 wire rst_n_baud;
 
 wire tf_wr_en;
-wire tf_fifo_full;
-
 wire rf_rd_en;
-wire rf_fifo_empty;
+
 wire [7:0] receiver_out;
 
 uart_baud_div #(.DIV_VAL(BAUD_DIV)) baud_gen(
@@ -65,7 +65,8 @@ uart_transmitter uart_tf_inst(
     .rst_tf_n(rst_n_baud),
     .fifo_wr(tf_wr_en),
     .tf_in(wr_in),
-    .tf_full(tf_fifo_full),
+    .tf_fifo_full(tf_full),
+    .tf_fifo_almost_full(tf_almost_full),
     .transmitter_tx(tx_pad)
 );
 
@@ -76,14 +77,13 @@ uart_receiver uart_rf_inst(
     .rst_rf_n(rst_n_baud),
     .fifo_rd(rf_rd_en),
     .rf_out(receiver_out),
-    .rf_empty(rf_fifo_empty),
+    .rf_fifo_empty(rf_empty),
+    .rf_fifo_almost_empty(rf_almost_empty),
     .transmitter_rx(rx_pad)
 );
-assign rf_empty = rf_fifo_empty;
-assign tf_full = tf_fifo_full;
 
-assign rf_rd_en = rd_stb && !rf_fifo_empty;
-assign tf_wr_en = wr_stb && !tf_fifo_full;
+assign rf_rd_en = rd_stb && !rf_empty;
+assign tf_wr_en = wr_stb && !tf_full;
 
 assign rd_out = rf_rd_en ? receiver_out : 8'h0;
 

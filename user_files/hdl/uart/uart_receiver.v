@@ -29,7 +29,8 @@ module uart_receiver(
     input transmitter_rx,
     
     output [7:0] rf_out,
-    output rf_empty
+    output rf_fifo_empty,
+    output rf_fifo_almost_empty
 
 );
 
@@ -41,7 +42,7 @@ module uart_receiver(
     
     //FIFO Signals
     wire fifo_wr;
-    wire rf_full;
+    wire rf_fifo_full;
     wire transmitter_rx_sync;
     
     //State Machine States
@@ -60,11 +61,13 @@ uart_fifo rf_fifo(
  
     .din(rf_shift_reg),
     .wr_en(fifo_wr),
-    .full(tf_full),
+    .full(rf_fifo_full),
+    .almost_full(),
     
     .dout(rf_out),
     .rd_en(fifo_rd),
-    .empty(rf_empty)
+    .empty(rf_fifo_empty),
+    .almost_empty(rf_fifo_almost_empty)
 );
 // Synchronize RX to rf clock
 synchronizer #(.DEFAULT_VAL(1'b1)) rx_synchronize(.clk(clk_rf), .rst_n(rst_rf_n), .s_i(transmitter_rx), .s_o(transmitter_rx_sync));
@@ -84,7 +87,7 @@ begin
         case (cur_state)
         POLL:
         begin
-            if(~tf_full && !transmitter_rx_sync)
+            if(~rf_fifo_full && !transmitter_rx_sync)
             begin
                 cur_state <= RECV_START;
                 _fifo_wr <= 1'b0;
